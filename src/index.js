@@ -1,3 +1,6 @@
+const VAPID_PUBLIC_KEY = "BOEVuFwC3Pp1IEeG1iSBRiomYPYsFerhw_JAOusEGic6J2nQFP3ty2CbWVMQKEf_4M1U52ngIWxWCwjaklKRXE4";
+const VAPID_PRIVATE_KEY = "etWSauGg81vpesgw_0-d-weHtbk2gUgP22DntkqSBts";
+
 import { buildPushHTTPRequest } from "@pushforge/builder";
 
 export default {
@@ -8,17 +11,15 @@ export default {
       return new Response(null, { headers: corsHeaders() });
     }
 
-    // 接收订阅信息
     if (url.pathname === "/subscribe" && request.method === "POST") {
       const subscription = await request.json();
       await env.PUSH_KV.put(subscription.endpoint, JSON.stringify(subscription));
       return json({ ok: true });
     }
 
-    // 发送推送
     if (url.pathname === "/push" && request.method === "POST") {
       const { title, body } = await request.json();
-      const privateJWK = vapidKeysToJWK(env.VAPID_PUBLIC_KEY, env.VAPID_PRIVATE_KEY);
+      const privateJWK = vapidKeysToJWK(VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
       const list = await env.PUSH_KV.list();
       let sent = 0;
 
@@ -39,7 +40,6 @@ export default {
           await fetch(req.endpoint, { method: "POST", headers: req.headers, body: req.body });
           sent++;
         } catch (e) {
-          // 订阅已失效，清理掉
           await env.PUSH_KV.delete(key.name);
         }
       }
@@ -50,7 +50,6 @@ export default {
   },
 };
 
-// 把网页生成器给的 公钥/私钥(base64url 格式)转换成库需要的 JWK 格式
 function vapidKeysToJWK(publicKeyB64url, privateKeyB64url) {
   const publicBytes = base64urlToBytes(publicKeyB64url);
   const x = publicBytes.slice(1, 33);
