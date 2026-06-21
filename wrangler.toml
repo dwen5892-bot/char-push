@@ -1,0 +1,7 @@
+name = "char-push"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+
+[[kv_namespaces]]
+binding = "PUSH_KV"
+id = "0bf0347012d2430d88c8489582b1b3d6"
